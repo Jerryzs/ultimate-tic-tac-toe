@@ -1,0 +1,71 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           ultimate-tic-tac-toe
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.students.cs.ubc.ca/tchen66/cpsc312-project1#readme>
+author:         Jerry Zhang,
+                Tony Chen,
+                Junming Ge
+maintainer:     Jerry Zhang,
+                Tony Chen,
+                Junming Ge
+copyright:      2024 Jerry Zhang, Tony Chen, and Junming Ge
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.students.cs.ubc.ca/tchen66/cpsc312-project1.git
+
+library
+  exposed-modules:
+      Game
+  other-modules:
+      Paths_ultimate_tic_tac_toe
+  autogen-modules:
+      Paths_ultimate_tic_tac_toe
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      Cabal
+    , base >=4.7 && <5
+  default-language: Haskell2010
+
+executable ultimate-tic-tac-toe-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_ultimate_tic_tac_toe
+  autogen-modules:
+      Paths_ultimate_tic_tac_toe
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Cabal
+    , base >=4.7 && <5
+    , ultimate-tic-tac-toe
+  default-language: Haskell2010
+
+test-suite ultimate-tic-tac-toe-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_ultimate_tic_tac_toe
+  autogen-modules:
+      Paths_ultimate_tic_tac_toe
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      Cabal
+    , base >=4.7 && <5
+    , ultimate-tic-tac-toe
+  default-language: Haskell2010
