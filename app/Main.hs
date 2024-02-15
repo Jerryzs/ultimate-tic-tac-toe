@@ -3,4 +3,6 @@ module Main (main) where
 import Game
 
 main :: IO ()
-main = start
+main = do
+    let _ = start (Action 0 0)
+    return ()
