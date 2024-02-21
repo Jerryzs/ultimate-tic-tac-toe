@@ -1,29 +1,55 @@
 module Game
     ( Action (..)
-    , State
+    , BigBoard
+    , Board
+    , BoardAction
+    , BoardChoice
+    , Player
+    , Square (..)
+    , State (..)
     , checkAction
+    , draw
+    , getActions
+    , getBoardActions
+    , getBoardWinner
+    , getNextPlayer
     , initialState
+    , play
+    , result
     , start
+    , win
     , winner
     ) where
 
-import Data.Maybe ( fromJust, isJust, isNothing )
+import Data.Maybe
+    ( fromJust
+    , isJust
+    , isNothing
+    )
 
 data Player = X
             | O
         deriving (Eq, Show)
 
+type Board = [Maybe Player]
+
+type BoardChoice = Int
+
+type BoardAction = Int
+
 data Square = Win Player
-            | Board [Maybe Player]
+            | Board Board
         deriving (Eq, Show)
 
-data Action = Action Int Int
+type BigBoard = [Square]
+
+data Action = Action BoardChoice BoardAction
         deriving (Eq, Show)
 
 {-| Game state which consists of a list of nine squares, the player to play, and
     the location of the board that the player is permitted to play.
 -}
-data State  = State [Square] Player Int
+data State  = State BigBoard Player BoardChoice
         deriving (Eq, Show)
 
 initialState :: State
@@ -33,6 +59,12 @@ checkAction :: (State, Action) -> Bool
 checkAction (State s _ r, Action o i) =
     (r == -1 || o == r)
     && isSquarePlayable (s!!o) i
+
+getActions :: State -> [Action]
+getActions s = [a | o <- [0..8], i <- [0..8], let a = Action o i, checkAction (s, a)]
+
+getBoardActions :: Board -> [BoardAction]
+getBoardActions b = [i | i <- [0..8], isNothing (b!!i)]
 
 {-| Checks if a player can play in a given square and, if desired, at a given
     location. The location should be an integer from 0 to 8 (incl.), or -1 to
@@ -49,38 +81,54 @@ isSquarePlayable (Board l) i
         | i == -1           = Nothing `elem` l
         | otherwise         = False
 
+draw :: State -> Bool
+draw s = fst r && isNothing (snd r)
+    where r = result s
+
+win :: State -> Bool
+win s = fst r && isJust (snd r)
+    where r = result s
+
+winner :: State -> Maybe Player
+winner s = snd (result s)
+
+result :: State -> (Bool, Maybe Player)
+result (State s _ r)
+    | r /= (-1)                                         = (False, Nothing)
+    | isJust wp                                         = (True, wp)
+    | and [not (isSquarePlayable sq (-1)) | sq <- s]    = (True, Nothing)
+    | otherwise                                         = (False, Nothing)
+        where wp = getWinner s
+
 getNextPlayer :: Player -> Player
 getNextPlayer X = O
 getNextPlayer O = X
 
-execute :: ([Square], Player, Action) -> [Square]
+execute :: (BigBoard, Player, Action) -> BigBoard
 execute (s, p, Action o i) = case splitAt o s of
     (bf, _:af) -> bf ++ updateSquare (executeSquare (s!!o, p, i)):af
-    _ -> s
+    _ -> s -- theoretically unreachable
 
 executeSquare :: (Square, Player, Int) -> Square
 executeSquare (Board b, p, i) = case splitAt i b of
     (bf, _:af) -> Board (bf ++ Just p: af)
-    _ -> Board (replicate 9 Nothing)
+    _ -> Board (take 8 b ++ [Just p]) -- theoretically unreachable
 executeSquare (Win p, _, _) = Win p
 
 updateSquare :: Square -> Square
 updateSquare (Win p) = Win p
 updateSquare (Board b)
-    | isNothing win = Board b
-    | otherwise     = Win (fromJust win)
-        where win = getBoardWinner b
+    | isNothing wp  = Board b
+    | otherwise     = Win (fromJust wp)
+        where wp = getBoardWinner b
 
-winner :: State -> Maybe Player
-winner (State s _ _) = getWinner s
-
-getWinner :: [Square] -> Maybe Player
+getWinner :: BigBoard -> Maybe Player
 getWinner s = getBoardWinner (map f s)
     where f sq = case sq of
                     Win p -> Just p
                     Board _ -> Nothing
 
-getBoardWinner :: [Maybe Player] -> Maybe Player
+getBoardWinner :: Board -> Maybe Player
 getBoardWinner [tl, tc, tr, cl, cc, cr, bl, bc, br]
     | isJust tc && tc == tl && tc == tr = tc
     | isJust cr && cr == tr && cr == br = cr
