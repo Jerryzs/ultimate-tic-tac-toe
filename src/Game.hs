@@ -46,7 +46,7 @@ isSquarePlayable :: Square -> Int -> Bool
 isSquarePlayable (Win _) _ = False
 isSquarePlayable (Board l) i
         | i >= 0 && i < 9   = isNothing (l!!i)
-        | i == -1           = True
+        | i == -1           = Nothing `elem` l
         | otherwise         = False
 
 getNextPlayer :: Player -> Player
