@@ -56,6 +56,12 @@
       "type": "shell",
       "label": "haskell run",
       "command": "stack run"
+    },
+    {
+      // F6
+      "type": "shell",
+      "label": "ghci",
+      "command": "stack repl"
     }
   ]
 }
