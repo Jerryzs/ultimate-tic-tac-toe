@@ -4,7 +4,7 @@ module Game
     , Board
     , BoardAction
     , BoardChoice
-    , Player
+    , Player (..)
     , Square (..)
     , State (..)
     , checkAction
@@ -12,8 +12,8 @@ module Game
     , getActions
     , getBoardActions
     , getBoardWinner
-    , getNextPlayer
     , initialState
+    , nextp
     , play
     , result
     , start
@@ -100,9 +100,9 @@ result (State s _ r)
     | otherwise                                         = (False, Nothing)
         where wp = getWinner s
 
-getNextPlayer :: Player -> Player
-getNextPlayer X = O
-getNextPlayer O = X
+nextp :: Player -> Player
+nextp X = O
+nextp O = X
 
 execute :: (BigBoard, Player, Action) -> BigBoard
 execute (s, p, Action o i) = case splitAt o s of
@@ -148,7 +148,7 @@ play (State s p r, Action o i)
     | checkAction (State s p r, Action o i) = State ns np nr
     | otherwise                             = State s p r
         where   ns = execute (s, p, Action o i)
-                np = getNextPlayer p
+                np = nextp p
                 nr
                     | isSquarePlayable (ns!!i) (-1) = i
                     | otherwise = -1
