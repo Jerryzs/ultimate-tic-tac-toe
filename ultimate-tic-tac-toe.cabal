@@ -27,6 +27,7 @@ source-repository head
 library
   exposed-modules:
       Game
+      Minimax
   other-modules:
       Paths_ultimate_tic_tac_toe
   autogen-modules:
