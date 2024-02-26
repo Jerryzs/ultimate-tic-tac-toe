@@ -48,7 +48,8 @@ boardVal wp (Board b, p, n, unfv, path)
     | n < 1             = (  0, path)
     | bw == Just wp     = (  1 * (fromIntegral n), path)
     | bw == Just np     = ( -1 * (fromIntegral n), path)
-    | length acts <= 1  = (0.5, path)
+    | null acts         = (0.5, path)
+    | length acts == 1  = (0.5, path ++ [(p, head acts)]) -- maybe redundant
     | otherwise         = foldr minimax (head valpths) valpths
         where   bw      = getBoardWinner b
                 np      = nextp wp
