@@ -1,25 +1,4 @@
-module Game
-    ( Action (..)
-    , BigBoard
-    , Board
-    , BoardAction
-    , BoardChoice
-    , Player (..)
-    , Square (..)
-    , State (..)
-    , checkAction
-    , draw
-    , getActions
-    , getBoardActions
-    , getBoardWinner
-    , initialState
-    , nextp
-    , play
-    , result
-    , start
-    , win
-    , winner
-    ) where
+module Game (module Game) where
 
 import Data.Maybe
     ( fromJust
