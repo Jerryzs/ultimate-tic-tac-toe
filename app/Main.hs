@@ -1,64 +1,92 @@
 module Main (main) where
 
 import Game
-import Minimax (playBest)
-import System.IO (hFlush, stdout)
+import Minimax
+    ( playAI
+    )
+
+import Data.List
+    ( intercalate
+    )
+import Text.Printf
+    ( printf
+    )
+import Text.Read
+    ( readMaybe
+    )
 
 -- Function to display the current state of the game board
-displayBoard :: BigBoard -> IO ()
-displayBoard bigBoard = putStrLn $ serializeBigBoard bigBoard
-
--- Function to serialize the BigBoard for display
-serializeBigBoard :: BigBoard -> String
-serializeBigBoard bigBoard = concatMap (\sq -> serializeSquare sq ++ "\n") bigBoard
-  where
-    serializeSquare :: Square -> String
-    serializeSquare (Win player) = show player ++ " wins this board\n"
-    serializeSquare (Board board) = serializeBoard board ++ "\n"
-
--- Helper to serialize a single board
-serializeBoard :: Board -> String
-serializeBoard board = unlines [unwords [serializePlayer (board !! (r * 3 + c)) | c <- [0..2]] | r <- [0..2]]
-  where
-    serializePlayer :: Maybe Player -> String
-    serializePlayer Nothing = "_"
-    serializePlayer (Just X) = "X"
-    serializePlayer (Just O) = "O"
+displayBoard :: BigBoard -> Int -> IO ()
+displayBoard bb hl = putStrLn $ concat (replicate 32 "\n") ++ intercalate "\n" [line n | n <- [0..14]]
+    where
+        line :: Int -> String
+        line n
+            | n > 13            = ""
+            | n == 4 || n == 9  = "----------|----------|----------"
+            | l == 0            = formatLine " %d        " (offsetIndices 1)
+            | l >= 1            = formatLine "   %s " [squareLine (l - 1, i) (bb !! i) | i <- offsetIndices 0]
+            | otherwise         = "          |          |          "
+                where
+                    l = mod n 5
+                    formatLine f lst = intercalate "|" $ printf f <$> lst
+                    offsetIndices o = [div n 5 * 3 + i | i <- [(0 + o)..(2 + o)]]
+        squareLine :: (Int, Int) -> Square -> String
+        squareLine (n, m) sq = case sq of
+            (Win X) | n == 0    -> "  \\ / "
+                    | n == 1    ->  "   X  "
+                    | n == 2    -> "  / \\ "
+            (Win O) | n == 0    -> "  / \\ "
+                    | n == 1    ->  "  | | "
+                    | n == 2    -> "  \\ / "
+            (Board b)           -> concat [" " ++ maybe (plc i) show c | o <- [0..2], let i = 3 * n + o, let c = b !! i]
+                where   plc i   | m == hl = show (i + 1)
+                                | otherwise = " "
+            _                   -> "      "
 
 -- Main game loop
-gameLoop :: State -> IO ()
-gameLoop state@(State bigBoard player _) = do
-  displayBoard bigBoard
-  if player == O then do
-    putStrLn "Computer's turn..."
-    let action = playBest state
-    let newState = case play state action of
-                    Continue s -> s
-                    End (Just winner) _ -> State bigBoard winner (-1)
-                    End Nothing _ -> state
-    gameLoop newState
-  else do
-    putStrLn "Your turn. Enter your move as 'boardPosition squarePosition':"
-    move <- getLine
-    let action = readAction move
-    case action of
-      Just a -> case play state a of
-                  Continue s -> gameLoop s
-                  End (Just winner) _ -> putStrLn $ show winner ++ " wins!"
-                  End Nothing _ -> putStrLn "It's a draw!"
-      Nothing -> do
-        putStrLn "Invalid move. Try again."
-        gameLoop state
+gameLoop :: String -> State -> IO ()
+gameLoop msg state@(State b p r) = do
+    displayBoard b r
 
--- Function to read an action from the user's input
-readAction :: String -> Maybe Action
-readAction str =
-  case words str of
-    [boardStr, posStr] -> Just (Action (read boardStr) (read posStr))
-    _ -> Nothing
+    putStr msg
+    putStrLn $ "You are currently playing as " ++ show p ++ ".\n"
+
+    choice <- chooseBoard b r
+
+    putStrLn $ "You are playing on board " ++ show choice ++ "."
+    putStrLn "Your move (1-9):"
+
+    move <- getLine
+
+    putStrLn ""
+    putStrLn "Please hold on..."
+
+    case readMaybe move of
+        Just a
+            | isSquarePlayable (b !! (choice - 1)) (a - 1) -> do
+                (m, ns) <- case playAI state (Action (choice - 1) (a - 1)) of
+                    Continue s -> return ("", s)
+                    End (Just winner) s -> return (show winner ++ " won!", s)
+                    End Nothing s -> return ("It's a draw!", s)
+                gameLoop m ns
+            | otherwise -> gameLoop ("You cannot move in square " ++ show a ++ "! Please try again.\n") state
+        Nothing -> gameLoop "Your move was invalid! Please try again.\n" state
+
+chooseBoard :: BigBoard -> BoardChoice -> IO Int
+chooseBoard b (-1) = do
+    putStrLn "You may choose a board to play on (1-9):"
+    choice <- getLine
+    case readMaybe choice of
+        Just c  | c > 0 && c <= 9 && isSquarePlayable (b !! (c - 1)) (-1)
+            -> do
+                displayBoard b (c - 1)
+                return c
+        _   -> do
+                displayBoard b (-1)
+                putStrLn "Inputted board is invalid. Please try again.\n"
+                chooseBoard b (-1)
+chooseBoard _ r = return (r + 1)
 
 main :: IO ()
 main = do
-  putStrLn "Starting Tic-Tac-Toe..."
-  let initialState = Game.initialState
-  gameLoop initialState
+  gameLoop "Welcome to Ultimate Tic-Tac-Toe!\n" initialState
