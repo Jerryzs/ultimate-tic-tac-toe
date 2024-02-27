@@ -58,25 +58,17 @@ boardVal wp (Board b, p, n, unfv, path)
                     (bf, _:af)  -> Board (bf ++ Just p: af)
                     _           -> Board (take 8 b ++ [Just p]) -- theoretically unreachable
                 valpths = [boardVal wp (nb i, nextp p, n - 1, [], path ++ [(p, i)]) | i <- acts]
+                bias (v, pth)
+                    | v == 0 || null pth            = (      v, pth)
+                    | a `elem` unfv                 = (  m * v, pth)
+                    | (-1) `elem` unfv && a == 4    = (0.1 + v, pth)
+                    | otherwise                     = (      v, pth)
+                        where   a   = snd (head pth)
+                                m   = if v < 0 then 1.2 else 0.8
                 op
                     | wp == p   = (>)
                     | otherwise = (<)
-                {-| Extracts value from type Val and applies bias, where moves
-                    that give the opponent favourable positions are considered
-                    less valueable to the current player and more valueable to
-                    the opponent. The favourable positions (board choices) for
-                    the opponent are supplied in @unfv@.
-                -}
-                extv (v, pth)
-                    | v == 0 || null pth || not (a `elem` unfv) = v
-                    | otherwise                                 = m * v
-                        where   a   = snd (head pth)
-                                m   = if v < 0 then 1.2 else 0.8
-                    -- case pth of
-                    --         (_:(_, a):_) | a `elem` pref    -> fst m * v
-                    --         ((_, a):_:_) | a `elem` pref    -> snd m * v
-                    --         _                               -> v
-                    --     where   m   = if v > 0 then (1.2, 0.8) else (0.8, 1.2)
                 minimax x y
-                    | fst x /= 0 && extv x `op` extv y  = x
+                    | fst x /= 0 && fst bx `op` fst y   = bx
                     | otherwise                         = y
+                        where   bx = bias x
