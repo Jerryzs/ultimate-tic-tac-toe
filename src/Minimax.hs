@@ -40,11 +40,12 @@ findc (dmin, dmax) (State sq p o)
             f (a, _) (b, _)
                     = compare b a
 
-playBest :: State -> State
-playBest s = play (s, snd (find s))
+playBest :: Result -> Result
+playBest (Continue s) = play s (snd (find s))
+playBest r = r
 
-playAI :: (State, Action) -> State
-playAI (s, a) = playBest (play (s, a))
+playAI :: State -> Action -> Result
+playAI s a = playBest (play s a)
 
 advantage :: Player -> Square -> Int
 advantage _ (Win _) = 0

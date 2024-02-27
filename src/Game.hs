@@ -31,6 +31,10 @@ data Action = Action BoardChoice BoardAction
 data State  = State BigBoard Player BoardChoice
         deriving (Eq, Show)
 
+data Result = Continue State
+            | End (Maybe Player) State
+        deriving (Eq, Show)
+
 initialState :: State
 initialState = State (replicate 9 (Board (replicate 9 Nothing))) X (-1)
 
@@ -60,23 +64,11 @@ isSquarePlayable (Board l) i
         | i == -1           = Nothing `elem` l
         | otherwise         = False
 
-draw :: State -> Bool
-draw s = fst r && isNothing (snd r)
-    where r = result s
-
-win :: State -> Bool
-win s = fst r && isJust (snd r)
-    where r = result s
-
-winner :: State -> Maybe Player
-winner s = snd (result s)
-
-result :: State -> (Bool, Maybe Player)
-result (State s _ r)
-    | r /= (-1)                                         = (False, Nothing)
-    | isJust wp                                         = (True, wp)
-    | and [not (isSquarePlayable sq (-1)) | sq <- s]    = (True, Nothing)
-    | otherwise                                         = (False, Nothing)
+result :: State -> Result
+result (State s p r)
+    | isJust wp                                         = End wp initialState
+    | and [not (isSquarePlayable sq (-1)) | sq <- s]    = End Nothing initialState
+    | otherwise                                         = Continue (State s p r)
         where wp = getWinner s
 
 nextp :: Player -> Player
@@ -122,15 +114,15 @@ getBoardWinner lst
     | length lst > 9    = getBoardWinner (take 9 lst)
     | otherwise         = Nothing
 
-play :: (State, Action) -> State
-play (State s p r, Action o i)
-    | checkAction (State s p r, Action o i) = State ns np nr
-    | otherwise                             = State s p r
+play :: State -> Action -> Result
+play (State s p r) (Action o i)
+    | checkAction (State s p r, Action o i) = result (State ns np nr)
+    | otherwise                             = Continue (State s p r)
         where   ns = execute (s, p, Action o i)
                 np = nextp p
                 nr
                     | isSquarePlayable (ns!!i) (-1) = i
                     | otherwise = -1
 
-start :: Action -> State
-start (Action a b) = play (initialState, Action a b)
+start :: Action -> Result
+start (Action a b) = play initialState (Action a b)
