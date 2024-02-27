@@ -66,11 +66,11 @@ gameLoop msg state@(State b p r) = do
             | isSquarePlayable (b !! (choice - 1)) (a - 1) -> do
                 (m, ns) <- case playAI state (Action (choice - 1) (a - 1)) of
                     Continue s -> return ("", s)
-                    End (Just winner) s -> return (show winner ++ " won!", s)
+                    End (Just winner) s -> return (show winner ++ " wins!", s)
                     End Nothing s -> return ("It's a draw!", s)
                 gameLoop m ns
             | otherwise -> gameLoop ("You cannot move in square " ++ show a ++ "! Please try again.\n") state
-        Nothing -> gameLoop "Your move was invalid! Please try again.\n" state
+        Nothing -> gameLoop "Your move is invalid! Please try again.\n" state
 
 chooseBoard :: BigBoard -> BoardChoice -> IO Int
 chooseBoard b (-1) = do
@@ -83,7 +83,7 @@ chooseBoard b (-1) = do
                 return c
         _   -> do
                 displayBoard b (-1)
-                putStrLn "Inputted board is invalid. Please try again.\n"
+                putStrLn "Selected board is invalid. Please try again.\n"
                 chooseBoard b (-1)
 chooseBoard _ r = return (r + 1)
 
