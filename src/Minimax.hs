@@ -1,5 +1,9 @@
 module Minimax
     ( find
+    , findExtreme
+    , findFast
+    , findNoob
+    , findc
     , playAI
     , playBest
     ) where
@@ -12,14 +16,25 @@ import Data.List
 
 type Val = (Double, [(Player, BoardAction)])
 
+findExtreme :: State -> (Double, Action)
+findExtreme = findc (9, 9)
+
 find :: State -> (Double, Action)
-find (State sq p o)
-    | o == -1 = head (sortBy f [extm n (boardVal p (sq!!n, p, 5, nfv, [])) | n <- ps])
-    | otherwise = extm o val
+find = findc (6, 9)
+
+findFast :: State -> (Double, Action)
+findFast = findc (5, 7)
+
+findNoob :: State -> (Double, Action)
+findNoob = findc (3, 5)
+
+findc :: (Int, Int) -> State -> (Double, Action)
+findc (dmin, dmax) (State sq p o)
+    | o == -1 = head (sortBy f [extm n (boardVal p (sq!!n, p, dmin, nonfv, [])) | n <- validsq])
+    | otherwise = extm o (boardVal p (sq!!o, p, dmax, nonfv, []))
         where
-            ps      = [n | n <- [0..8], isSquarePlayable (sq!!n) (-1)]
-            nfv     = [n | n <- [0..8], let s = sq!!n, not (isSquarePlayable s (-1)) || abs (advantage p s) > 1]
-            val     = boardVal p (sq!!o, p, 9, nfv, [])
+            validsq = [n | n <- [0..8], isSquarePlayable (sq!!n) (-1)]
+            nonfv   = (-1):[n | n <- [0..8], let s = sq!!n, not (isSquarePlayable s (-1)) || abs (advantage p s) > 1]
             extm bc (v, pth)
                     = (v, Action bc (snd (head pth)))
             f (a, _) (b, _)
