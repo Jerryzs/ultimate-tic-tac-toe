@@ -10,8 +10,8 @@ module Minimax
 
 import Game
 
-import Data.List
-    ( sortBy
+import Data.Foldable
+    ( maximumBy
     )
 
 type Val = (Double, [(Player, BoardAction)])
@@ -23,22 +23,21 @@ find :: State -> (Double, Action)
 find = findc (6, 9)
 
 findFast :: State -> (Double, Action)
-findFast = findc (5, 7)
+findFast = findc (4, 6)
 
 findNoob :: State -> (Double, Action)
-findNoob = findc (3, 5)
+findNoob = findc (2, 4)
 
 findc :: (Int, Int) -> State -> (Double, Action)
 findc (dmin, dmax) (State sq p o)
-    | o == -1 = head (sortBy f [extm n (boardVal p (sq!!n, p, dmin, nonfv, [])) | n <- validsq])
-    | otherwise = extm o (boardVal p (sq!!o, p, dmax, nonfv, []))
+    | o == -1 = maximumBy f ([extm n (boardVal (length validsq < 8) p (sq !! n, sq, n, p, dmin, [])) | n <- validsq])
+    | otherwise = extm o (boardVal True p (sq !! o, sq, o, p, dmax, []))
         where
             validsq = [n | n <- [0..8], isSquarePlayable (sq!!n) (-1)]
-            nonfv   = (-1):[n | n <- [0..8], let s = sq!!n, not (isSquarePlayable s (-1)) || abs (advantage p s) > 1]
             extm bc (v, pth)
                     = (v, Action bc (snd (head pth)))
             f (a, _) (b, _)
-                    = compare b a
+                    = compare a b
 
 playBest :: Result -> Result
 playBest (Continue s) = play s (snd (find s))
@@ -56,35 +55,47 @@ advantage p (Board b) = uncurry (-) c
                 Nothing         -> y
             c       = foldr f (0, 0) b
 
-boardVal :: Player -> (Square, Player, Int, [Int], [(Player, BoardAction)]) -> Val
-boardVal wp (Win p, _, _, _, _)
-    | wp == p   = ( 100, [])
-    | otherwise = (-100, [])
-boardVal wp (Board b, p, n, unfv, path)
-    | n < 1             = (  0, path)
-    | bw == Just wp     = (  1 * (fromIntegral n), path)
-    | bw == Just np     = ( -1 * (fromIntegral n), path)
+boardVal :: Bool -> Player -> (Square, BigBoard, BoardChoice, Player, Int, [(Player, BoardAction)]) -> Val
+boardVal _ wp (Win p, _, _, _, _, _)
+    | wp == p   = ( 4, [])
+    | otherwise = (-4, [])
+boardVal entry wp (Board b, cxt, c, p, n, path)
     | null acts         = (0.5, path)
-    | length acts == 1  = (0.5, path ++ [(p, head acts)]) -- maybe redundant
-    | otherwise         = foldr minimax (head valpths) valpths
-        where   bw      = getBoardWinner b
-                np      = nextp wp
-                acts    = getBoardActions b
-                nb i    = case splitAt i b of
-                    (bf, _:af)  -> Board (bf ++ Just p: af)
-                    _           -> Board (take 8 b ++ [Just p]) -- theoretically unreachable
-                valpths = [boardVal wp (nb i, nextp p, n - 1, [], path ++ [(p, i)]) | i <- acts]
-                bias (v, pth)
-                    | v == 0 || null pth            = (      v, pth)
-                    | a `elem` unfv                 = (  m * v, pth)
-                    | (-1) `elem` unfv && a == 4    = (0.1 + v, pth)
-                    | otherwise                     = (      v, pth)
-                        where   a   = snd (head pth)
-                                m   = if v < 0 then 1.2 else 0.8
-                op
-                    | wp == p   = (>)
-                    | otherwise = (<)
-                minimax x y
-                    | fst x /= 0 && fst bx `op` fst y   = bx
-                    | otherwise                         = y
-                        where   bx = bias x
+    | b == emptyb       = foldr minimax (bias $ head blnkvps) blnkvps
+    | n < 1             = (  0, path)
+    | bw == Just wp     = (  1 * fromIntegral n, path)
+    | bw == Just np     = ( -1 * fromIntegral n, path)
+    | otherwise         = foldr minimax (bias $ head valpths) valpths
+        where
+            emptyb  = replicate 9 Nothing
+            bw      = getBoardWinner b
+            np      = nextp wp
+            acts    = getBoardActions b
+            nb i    = case splitAt i b of
+                (bf, _:af)  -> Board (bf ++ Just p: af)
+                _           -> Board (take 8 b ++ [Just p]) -- theoretically unreachable
+            blnkvps = [(0.5, [(p, i)]) | i <- [0..3] ++ [5..8]] ++ [(0.6, [(p, 4)])]
+            valpths = [boardVal False wp (nb i, cxt, c, nextp p, n - 1, path ++ [(p, i)]) | i <- acts]
+            bias (v, pth)
+                | null pth                          = (    v, pth)
+                | not $ isSquarePlayable nxtsq (-1) = (m 2 v, pth)
+                | entry && v2 /= 0                  = (deepe, pth)
+                | otherwise                         = (mad v, pth)
+                    where
+                        nxt     = snd (head pth)
+                        nxtsq   = execute (cxt, p, Action c nxt) !! nxt
+                        v2      = fst $ boardVal False p (nxtsq, cxt, c, nextp p, n, [])
+                        -- v3      = fst $ boardVal False p (nxtsq, cxt, c, p, 4, [])
+                        deepe   = (v + v2) * 2
+                        m :: Int -> Double -> Double
+                        m l a
+                            | a < 0     = a * (1.2 ** (- fromIntegral l))
+                            | otherwise = a * (0.83 ** fromIntegral l)
+                        mad     = m (advantage p nxtsq)
+            op
+                | wp == p   = (>)
+                | otherwise = (<)
+            minimax x y
+                | fst x /= 0 && fst bx `op` fst y   = bx
+                | otherwise                         = y
+                    where   bx = bias x
