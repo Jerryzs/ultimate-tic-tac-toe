@@ -54,7 +54,7 @@ gameLoop msg state@(State b p r) = do
     choice <- chooseBoard b r
 
     putStrLn $ "You are playing on board " ++ show choice ++ "."
-    putStrLn "Your move (1-9):"
+    putStr "Enter your move (1-9): "
 
     move <- getLine
 
@@ -65,16 +65,20 @@ gameLoop msg state@(State b p r) = do
         Just a
             | isSquarePlayable (b !! (choice - 1)) (a - 1) -> do
                 (m, ns) <- case playAI state (Action (choice - 1) (a - 1)) of
-                    Continue s -> return ("", s)
-                    End (Just winner) s -> return (show winner ++ " wins!", s)
-                    End Nothing s -> return ("It's a draw!", s)
+                    Continue s
+                        -> return ("", s)
+                    End (Just winner) s
+                        -> return (show winner ++ " wins! Starting a new game...\n", s)
+                    End Nothing s
+                        -> return ("It's a draw! Starting a new game...\n", s)
                 gameLoop m ns
+            | a == -1 -> return ()
             | otherwise -> gameLoop ("You cannot move in square " ++ show a ++ "! Please try again.\n") state
         Nothing -> gameLoop "Your move is invalid! Please try again.\n" state
 
 chooseBoard :: BigBoard -> BoardChoice -> IO Int
 chooseBoard b (-1) = do
-    putStrLn "You may choose a board to play on (1-9):"
+    putStr "You may choose a board to play on (1-9): "
     choice <- getLine
     case readMaybe choice of
         Just c  | c > 0 && c <= 9 && isSquarePlayable (b !! (c - 1)) (-1)
@@ -83,7 +87,7 @@ chooseBoard b (-1) = do
                 return c
         _   -> do
                 displayBoard b (-1)
-                putStrLn "Selected board is invalid. Please try again.\n"
+                putStrLn "Entered value is invalid! Please try again.\n"
                 chooseBoard b (-1)
 chooseBoard _ r = return (r + 1)
 
