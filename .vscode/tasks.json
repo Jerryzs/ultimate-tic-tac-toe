@@ -17,7 +17,16 @@
       "label": "haskell build",
       "type": "shell",
       //"command": "cabal configure && cabal build"
-      "command": "stack build"
+      "command": "stack build",
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false,
+        "group": "build"
+      }
     },
     {
       // F6
@@ -25,8 +34,17 @@
       "type": "shell",
       "label": "haskell clean & build",
       //"command": "cabal clean && cabal configure && cabal build"
-      "command": "stack clean && stack build"
+      "command": "stack clean && stack build",
       //"command": "stack clean ; stack build"  // for powershell
+      "presentation": {
+        "echo": true,
+        "reveal": "silent",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false,
+        "group": "build"
+      }
     },
     {
       // F8
@@ -61,7 +79,15 @@
       // F6
       "type": "shell",
       "label": "ghci",
-      "command": "stack repl"
+      "command": "stack repl",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      }
     }
   ]
 }
