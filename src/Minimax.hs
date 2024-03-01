@@ -77,11 +77,11 @@ boardVal player depth (board, choice) = f True player (board !! choice, board, c
             | wp == p   = ( 4, [])
             | otherwise = (-4, [])
         f entry wp (Board b, cxt, c, p, n, path)
-            | null acts         = (0.5, path)
             | b == emptyb       = foldr minimax (bias $ head blnkvps) blnkvps
-            | n < 1             = (  0, path)
             | bw == Just wp     = (  1 * fromIntegral n, path)
             | bw == Just np     = ( -1 * fromIntegral n, path)
+            | null acts         = (0.5, path)
+            | n < 1             = (  0, path)
             | otherwise         = foldr minimax (bias $ head valpths) valpths
                 where
                     emptyb  = replicate 9 Nothing
