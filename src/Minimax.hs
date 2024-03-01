@@ -8,6 +8,7 @@ module Minimax
     , playBest
     ) where
 
+-- Importing necessary modules for game logic and randomness
 import Game
 
 import System.Random
@@ -21,18 +22,20 @@ import Data.List
 
 type Val = (Double, [(Player, BoardAction)])
 
+-- Different find functions provide varying levels of depth for the Minimax algorithm.
 findExtreme :: State -> (Double, Action)
-findExtreme = findc (9, 9)
+findExtreme = findc (9, 9)  -- Uses a high depth for thorough search.
 
 find :: State -> (Double, Action)
-find = findc (4, 9)
+find = findc (4, 9)         -- Standard search depth.
 
 findFast :: State -> (Double, Action)
-findFast = findc (4, 6)
+findFast = findc (4, 6)     -- Reduced depth for faster computation.
 
 findNoob :: State -> (Double, Action)
-findNoob = findc (2, 4)
+findNoob = findc (2, 4)     -- Low depth for a less challenging AI.
 
+-- Core function implementing Minimax with configurable depth.
 findc :: (Int, Int) -> State -> (Double, Action)
 findc (dmin, dmax) (State sq p o)
     | o == -1   = rand $ sortBy f ([extm n (boardVal p dmin (sq, n)) | n <- validsq])
@@ -54,13 +57,16 @@ findc (dmin, dmax) (State sq p o)
                         g [] a = [a]
                         rng = unfoldr (Just . uniformR (0, length best - 1)) $ mkStdGen $ length l
 
+-- Selects the best move based on the current game state.
 playBest :: Result -> Result
-playBest (Continue s) = play s (snd (find s))
-playBest r = r
+playBest (Continue s) = play s (snd (find s))  -- Continues playing if the game isn't over.
+playBest r = r                                 -- Returns the result if the game has ended.
 
+-- Plays an AI move based on a given action.
 playAI :: State -> Action -> Result
-playAI s a = playBest (play s a)
+playAI s a = playBest (play s a)  -- Plays the best move after the given action.
 
+-- Calculates the advantage of a player over a specific square.
 advantage :: Player -> Square -> Int
 advantage _ (Win _) = 0
 advantage p (Board b) = uncurry (-) c
@@ -70,8 +76,9 @@ advantage p (Board b) = uncurry (-) c
                 Nothing         -> y
             c       = foldr f (0, 0) b
 
+-- Determines the value of a board for a given player and depth.
 boardVal :: Player -> Int -> (BigBoard, BoardChoice) -> Val
-boardVal player depth (board, choice) = f True player (board !! choice, board, choice, player, depth, [])
+boardVal player depth (board, choice) = f True player (board !! choice, board, choice, player, depth, []) -- Recursive function to evaluate board value.
     where
         f _ wp (Win p, _, _, _, _, _)
             | wp == p   = ( 4, [])
