@@ -33,6 +33,13 @@ findFast = findc (4, 6)
 findNoob :: State -> (Double, Action)
 findNoob = findc (2, 4)
 
+{-|
+    Finds the best action to play, given the current state. If the state imposes
+    a small board, the function returns the value computed from the only legal
+    small board. If the state allows free choice of small board, values are
+    computed for all legal small boards, then a random move is chosen from a
+    list of best moves, which must have equal values.
+-}
 findc :: (Int, Int) -> State -> (Double, Action)
 findc (dmin, dmax) (State sq p o)
     | o == -1   = rand $ sortBy f ([extm n (boardVal p dmin (sq, n)) | n <- validsq])
@@ -58,9 +65,19 @@ playBest :: Result -> Result
 playBest (Continue s) = play s (snd (find s))
 playBest r = r
 
+{-|
+    Plays the given action on the given state, then plays the computed best move
+    from @playBest@. Returns the result of the game after the computed move is
+    played, or, if the game concludes before a move can be computed, the final
+    result of the game with no move made by the computer.
+-}
 playAI :: State -> Action -> Result
 playAI s a = playBest (play s a)
 
+{-|
+    Returns an integer specifying the number of moves the given player has made
+    on a square subtracted by the number of moves made by the opponent.
+-}
 advantage :: Player -> Square -> Int
 advantage _ (Win _) = 0
 advantage p (Board b) = uncurry (-) c
@@ -70,6 +87,17 @@ advantage p (Board b) = uncurry (-) c
                 Nothing         -> y
             c       = foldr f (0, 0) b
 
+{-|
+    Computes the value for a square on the main board, given the player whose
+    turn it is to play and the maximum number of total turns to be played on
+    this board. For a square that is a small board, assuming the opponent always
+    plays the best move: a positive value indicates the possibility for the
+    player to win the small board, a negative value eliminates such possibility;
+    the closer the value is to the given depth, the closer the player is to
+    winning. A list of tuples, specifying the player and the move to play, is
+    returned with the computed value to represent the  sequence of turns that
+    needs to be played to reach the evaluated outcome.
+-}
 boardVal :: Player -> Int -> (BigBoard, BoardChoice) -> Val
 boardVal player depth (board, choice) = f True player (board !! choice, board, choice, player, depth, [])
     where
