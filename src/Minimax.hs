@@ -8,6 +8,7 @@ module Minimax
     , playBest
     ) where
 
+-- Importing necessary modules for game logic and randomness
 import Game
 
 import System.Random
@@ -21,17 +22,18 @@ import Data.List
 
 type Val = (Double, [(Player, BoardAction)])
 
+-- Different find functions provide varying levels of depth for the Minimax algorithm.
 findExtreme :: State -> (Double, Action)
-findExtreme = findc (9, 9)
+findExtreme = findc (9, 9)  -- Uses a high depth for thorough search.
 
 find :: State -> (Double, Action)
-find = findc (4, 9)
+find = findc (4, 9)         -- Standard search depth.
 
 findFast :: State -> (Double, Action)
-findFast = findc (4, 6)
+findFast = findc (4, 6)     -- Reduced depth for faster computation.
 
 findNoob :: State -> (Double, Action)
-findNoob = findc (2, 4)
+findNoob = findc (2, 4)     -- Low depth for a less challenging AI.
 
 {-|
     Finds the best action to play, given the current state. If the state imposes
@@ -61,9 +63,10 @@ findc (dmin, dmax) (State sq p o)
                         g [] a = [a]
                         rng = unfoldr (Just . uniformR (0, length best - 1)) $ mkStdGen $ length l
 
+-- Selects the best move based on the current game state.
 playBest :: Result -> Result
-playBest (Continue s) = play s (snd (find s))
-playBest r = r
+playBest (Continue s) = play s (snd (find s))  -- Continues playing if the game isn't over.
+playBest r = r                                 -- Returns the result if the game has ended.
 
 {-|
     Plays the given action on the given state, then plays the computed best move
@@ -72,7 +75,7 @@ playBest r = r
     result of the game with no move made by the computer.
 -}
 playAI :: State -> Action -> Result
-playAI s a = playBest (play s a)
+playAI s a = playBest (play s a)  -- Plays the best move after the given action.
 
 {-|
     Returns an integer specifying the number of moves the given player has made
@@ -99,7 +102,7 @@ advantage p (Board b) = uncurry (-) c
     needs to be played to reach the evaluated outcome.
 -}
 boardVal :: Player -> Int -> (BigBoard, BoardChoice) -> Val
-boardVal player depth (board, choice) = f True player (board !! choice, board, choice, player, depth, [])
+boardVal player depth (board, choice) = f True player (board !! choice, board, choice, player, depth, []) -- Recursive function to evaluate board value.
     where
         f _ wp (Win p, _, _, _, _, _)
             | wp == p   = ( 4, [])

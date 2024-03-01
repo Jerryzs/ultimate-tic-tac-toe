@@ -1,5 +1,6 @@
 module Main (main) where
 
+-- Import necessary modules for game logic, Minimax AI, and input/output handling
 import Game
 import Minimax
     ( playAI
@@ -25,15 +26,15 @@ displayBoard bb hl = putStrLn $ concat (replicate 32 "\n") ++ intercalate "\n" [
     where
         line :: Int -> String
         line n
-            | n > 13            = ""
-            | n == 4 || n == 9  = "----------|----------|----------"
-            | l == 0            = formatLine " %s        " [if hl `elem` [-1, i] then show (i + 1) else " " | i <- indices]
-            | l >= 1            = formatLine "   %s " [squareLine (l - 1, i) (bb !! i) | i <- indices]
-            | otherwise         = "          |          |          "
+            | n > 13            = ""  -- Ends board display
+            | n == 4 || n == 9  = "----------|----------|----------"  -- Divider lines between boards
+            | l == 0            = formatLine " %s        " [if hl `elem` [-1, i] then show (i + 1) else " " | i <- indices]  -- Numbering for boards
+            | l >= 1            = formatLine "   %s " [squareLine (l - 1, i) (bb !! i) | i <- indices]  -- Display squares
+            | otherwise         = "          |          |          "  -- Padding lines
                 where
                     l = mod n 5
                     formatLine f lst = intercalate "|" $ printf f <$> lst
-                    indices = [div n 5 * 3 + i | i <- [0..2]]
+                    indices = [div n 5 * 3 + i | i <- [0..2]]  -- Board indices
         squareLine :: (Int, Int) -> Square -> String
         squareLine (n, m) sq = case sq of
             (Win X) | n == 0    -> "  \\ / "
@@ -48,22 +49,24 @@ displayBoard bb hl = putStrLn $ concat (replicate 32 "\n") ++ intercalate "\n" [
                         | otherwise = " "
             _                   -> "      "
 
--- Main game loop
+-- Main game loop that handles game state and user interaction
 gameLoop :: String -> State -> IO ()
 gameLoop msg state@(State b p r) = do
-    displayBoard b r
+    displayBoard b r  -- Display the current board
 
+    -- Prompt player for move and handle input
     putStr msg
     putStrLn $ "You are currently playing as " ++ show p ++ ".\n"
 
-    choice <- chooseBoard b r
+    choice <- chooseBoard b r  -- Let player choose which board to play on
 
     putStrLn $ "You are playing on board " ++ show choice ++ "."
     putStr "Enter your move (1-9): "
-    hFlush stdout
+    hFlush stdout  -- Ensure prompt is displayed immediately
 
-    move <- getLine
+    move <- getLine  -- Read player's move
 
+    -- Process the move and update the game state accordingly
     case readMaybe move of
         Just a
             | isSquarePlayable (b !! (choice - 1)) (a - 1) -> do
@@ -84,6 +87,7 @@ gameLoop msg state@(State b p r) = do
             | otherwise -> gameLoop ("You cannot move in square " ++ show a ++ "! Please try again.\n") state
         Nothing -> gameLoop "Your move is invalid! Please try again.\n" state
 
+-- Function to allow the player to choose a board to play on
 chooseBoard :: BigBoard -> BoardChoice -> IO Int
 chooseBoard b (-1) = do
     putStr "You may choose a board to play on (1-9): "
@@ -100,6 +104,7 @@ chooseBoard b (-1) = do
                 chooseBoard b (-1)
 chooseBoard _ r = return (r + 1)
 
+-- Entry point of the program; initializes the game
 main :: IO ()
 main = do
-  gameLoop "Welcome to Ultimate Tic-Tac-Toe!\n" initialState
+  gameLoop "Welcome to Ultimate Tic-Tac-Toe!\n" initialState  -- Start the game loop with the initial state
