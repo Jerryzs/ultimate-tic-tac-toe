@@ -23,13 +23,13 @@ displayBoard bb hl = putStrLn $ concat (replicate 32 "\n") ++ intercalate "\n" [
         line n
             | n > 13            = ""
             | n == 4 || n == 9  = "----------|----------|----------"
-            | l == 0            = formatLine " %d        " (offsetIndices 1)
-            | l >= 1            = formatLine "   %s " [squareLine (l - 1, i) (bb !! i) | i <- offsetIndices 0]
+            | l == 0            = formatLine " %s        " [if hl `elem` [-1, i] then show (i + 1) else " " | i <- indices]
+            | l >= 1            = formatLine "   %s " [squareLine (l - 1, i) (bb !! i) | i <- indices]
             | otherwise         = "          |          |          "
                 where
                     l = mod n 5
                     formatLine f lst = intercalate "|" $ printf f <$> lst
-                    offsetIndices o = [div n 5 * 3 + i | i <- [(0 + o)..(2 + o)]]
+                    indices = [div n 5 * 3 + i | i <- [0..2]]
         squareLine :: (Int, Int) -> Square -> String
         squareLine (n, m) sq = case sq of
             (Win X) | n == 0    -> "  \\ / "
@@ -39,8 +39,9 @@ displayBoard bb hl = putStrLn $ concat (replicate 32 "\n") ++ intercalate "\n" [
                     | n == 1    ->  "  | | "
                     | n == 2    -> "  \\ / "
             (Board b)           -> concat [" " ++ maybe (plc i) show c | o <- [0..2], let i = 3 * n + o, let c = b !! i]
-                where   plc i   | m == hl = show (i + 1)
-                                | otherwise = " "
+                where plc i
+                        | m == hl   = show (i + 1)
+                        | otherwise = " "
             _                   -> "      "
 
 -- Main game loop
@@ -58,13 +59,15 @@ gameLoop msg state@(State b p r) = do
 
     move <- getLine
 
-    putStrLn ""
-    putStrLn "Please hold on..."
-
     case readMaybe move of
         Just a
             | isSquarePlayable (b !! (choice - 1)) (a - 1) -> do
-                (m, ns) <- case playAI state (Action (choice - 1) (a - 1)) of
+                let act = Action (choice - 1) (a - 1)
+                case play state act of
+                    Continue (State nb _ _) -> displayBoard nb (-1)
+                    _ -> return ()
+                putStrLn "Please hold on..."
+                (m, ns) <- case playAI state act of
                     Continue s
                         -> return ("", s)
                     End (Just winner) s
