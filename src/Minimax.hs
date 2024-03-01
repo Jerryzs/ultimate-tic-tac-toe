@@ -10,8 +10,13 @@ module Minimax
 
 import Game
 
-import Data.Foldable
-    ( maximumBy
+import System.Random
+    ( mkStdGen
+    , uniformR
+    )
+import Data.List
+    ( sortBy
+    , unfoldr
     )
 
 type Val = (Double, [(Player, BoardAction)])
@@ -20,7 +25,7 @@ findExtreme :: State -> (Double, Action)
 findExtreme = findc (9, 9)
 
 find :: State -> (Double, Action)
-find = findc (6, 9)
+find = findc (4, 9)
 
 findFast :: State -> (Double, Action)
 findFast = findc (4, 6)
@@ -30,14 +35,24 @@ findNoob = findc (2, 4)
 
 findc :: (Int, Int) -> State -> (Double, Action)
 findc (dmin, dmax) (State sq p o)
-    | o == -1   = maximumBy f ([extm n (boardVal p dmin (sq, n)) | n <- validsq])
+    | o == -1   = rand $ sortBy f ([extm n (boardVal p dmin (sq, n)) | n <- validsq])
     | otherwise = extm o (boardVal p dmax (sq, o))
         where
-            validsq = [n | n <- [0..8], isSquarePlayable (sq!!n) (-1)]
+            validsq     = [n | n <- [0..8], isSquarePlayable (sq!!n) (-1)]
             extm bc (v, pth)
-                    = (v, Action bc (snd (head pth)))
+                        = (v, Action bc (snd (head pth)))
             f (a, _) (b, _)
-                    = compare a b
+                        = compare b a
+            rand l
+                | length best == 1  = head best
+                | otherwise         = best !! (rng !! (length l - length best))
+                    where
+                        best = foldl g [] l
+                        g (h@(bv, _):t) m@(v, _)
+                            | bv == v = m:h:t
+                            | otherwise = h:t
+                        g [] a = [a]
+                        rng = unfoldr (Just . uniformR (0, length best - 1)) $ mkStdGen $ length l
 
 playBest :: Result -> Result
 playBest (Continue s) = play s (snd (find s))
