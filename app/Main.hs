@@ -5,6 +5,10 @@ import Minimax
     ( playAI
     )
 
+import System.IO
+    ( hFlush
+    , stdout
+    )
 import Data.List
     ( intercalate
     )
@@ -56,6 +60,7 @@ gameLoop msg state@(State b p r) = do
 
     putStrLn $ "You are playing on board " ++ show choice ++ "."
     putStr "Enter your move (1-9): "
+    hFlush stdout
 
     move <- getLine
 
@@ -82,6 +87,7 @@ gameLoop msg state@(State b p r) = do
 chooseBoard :: BigBoard -> BoardChoice -> IO Int
 chooseBoard b (-1) = do
     putStr "You may choose a board to play on (1-9): "
+    hFlush stdout
     choice <- getLine
     case readMaybe choice of
         Just c  | c > 0 && c <= 9 && isSquarePlayable (b !! (c - 1)) (-1)
