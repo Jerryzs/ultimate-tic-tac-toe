@@ -1,10 +1,2 @@
 cradle:
-  multi:
-    - path: "./Setup.hs"
-      config:
-        cradle:
-          none:
-    - path: "./"
-      config:
-        cradle:
-          cabal:
+  stack:
