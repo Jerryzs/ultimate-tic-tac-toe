@@ -1,9 +1,14 @@
-name:                ultimate-tic-tac-toe
-version:             0.1.0.0
-git:                 "https://github.students.cs.ubc.ca/tchen66/cpsc312-project1.git"
-license:             BSD-3-Clause
-author:              ["Jerry Zhang", "Tony Chen", "Junming Ge"]
-copyright:           "2024 Jerry Zhang, Tony Chen, and Junming Ge"
+spec-version: 0.36.0
+name: ultimate-tic-tac-toe
+version: 1.0.0
+github: Jerryzs/ultimate-tic-tac-toe
+license: BSD-3-Clause
+author:
+  - Jerry Zhang <jerryzs@students.cs.ubc.ca>
+  - Tony Chen
+  - Junming Ge
+
+build-type: Simple
 
 extra-source-files:
 - README.md
@@ -15,7 +20,7 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.students.cs.ubc.ca/tchen66/cpsc312-project1#readme>
+description:         Please see the README on GitHub at <https://github.com/Jerryzs/ultimate-tic-tac-toe>
 
 dependencies:
 - base >= 4.7 && < 5

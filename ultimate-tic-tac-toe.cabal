@@ -5,15 +5,16 @@ cabal-version: 2.2
 -- see: https://github.com/sol/hpack
 
 name:           ultimate-tic-tac-toe
-version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.students.cs.ubc.ca/tchen66/cpsc312-project1#readme>
-author:         Jerry Zhang,
+version:        1.0.0
+description:    Please see the README on GitHub at <https://github.com/Jerryzs/ultimate-tic-tac-toe>
+homepage:       https://github.com/Jerryzs/ultimate-tic-tac-toe#readme
+bug-reports:    https://github.com/Jerryzs/ultimate-tic-tac-toe/issues
+author:         Jerry Zhang <jerryzs@students.cs.ubc.ca>,
                 Tony Chen,
                 Junming Ge
-maintainer:     Jerry Zhang,
+maintainer:     Jerry Zhang <jerryzs@students.cs.ubc.ca>,
                 Tony Chen,
                 Junming Ge
-copyright:      2024 Jerry Zhang, Tony Chen, and Junming Ge
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -22,16 +23,12 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.students.cs.ubc.ca/tchen66/cpsc312-project1.git
+  location: https://github.com/Jerryzs/ultimate-tic-tac-toe
 
 library
   exposed-modules:
       Game
       Minimax
-  other-modules:
-      Paths_ultimate_tic_tac_toe
-  autogen-modules:
-      Paths_ultimate_tic_tac_toe
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -43,10 +40,6 @@ library
 
 executable ultimate-tic-tac-toe
   main-is: Main.hs
-  other-modules:
-      Paths_ultimate_tic_tac_toe
-  autogen-modules:
-      Paths_ultimate_tic_tac_toe
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
