@@ -41,7 +41,7 @@ library
     , random
   default-language: Haskell2010
 
-executable ultimate-tic-tac-toe-exe
+executable ultimate-tic-tac-toe
   main-is: Main.hs
   other-modules:
       Paths_ultimate_tic_tac_toe
@@ -49,23 +49,6 @@ executable ultimate-tic-tac-toe-exe
       Paths_ultimate_tic_tac_toe
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
-  build-depends:
-      Cabal
-    , base >=4.7 && <5
-    , random
-    , ultimate-tic-tac-toe
-  default-language: Haskell2010
-
-test-suite ultimate-tic-tac-toe-test
-  type: exitcode-stdio-1.0
-  main-is: Spec.hs
-  other-modules:
-      Paths_ultimate_tic_tac_toe
-  autogen-modules:
-      Paths_ultimate_tic_tac_toe
-  hs-source-dirs:
-      test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Cabal

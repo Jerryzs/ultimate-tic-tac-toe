@@ -37,20 +37,9 @@ library:
   source-dirs: src
 
 executables:
-  ultimate-tic-tac-toe-exe:
+  ultimate-tic-tac-toe:
     main:                Main.hs
     source-dirs:         app
-    ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
-    dependencies:
-    - ultimate-tic-tac-toe
-
-tests:
-  ultimate-tic-tac-toe-test:
-    main:                Spec.hs
-    source-dirs:         test
     ghc-options:
     - -threaded
     - -rtsopts
